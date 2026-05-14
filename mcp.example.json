@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "postman-mcp-streamable": {
+      "type": "streamable-http",
+      "url": "http://localhost:8010/mcp",
+      "description": "Postman MCP Server (Streamable HTTP) - 41 Postman API tools"
+    },
+    "postman-mcp-stdio": {
+      "command": "postman-mcp",
+      "args": ["--mode", "stdio"],
+      "env": {
+        "POSTMAN_API_KEY": "your_postman_api_key_here"
+      },
+      "description": "Postman MCP Server (stdio) - 41 Postman API tools"
+    },
+    "postman-mcp-sse": {
+      "type": "sse",
+      "url": "http://localhost:8010/sse",
+      "description": "Postman MCP Server (SSE) - 41 Postman API tools",
+      "env": {
+        "POSTMAN_API_KEY": "your_postman_api_key_here"
+      }
+    }
+  }
+}
