@@ -23,7 +23,8 @@ async def postman_api_call(
     endpoint: str,
     body: dict | None = None,
     params: dict | None = None,
-    headers: dict | None = None
+    headers: dict | None = None,
+    use_v10_api: bool = False
 ) -> dict:
     """Make an API call to Postman API"""
     if not POSTMAN_API_KEY:
@@ -36,6 +37,9 @@ async def postman_api_call(
         "X-Api-Key": POSTMAN_API_KEY,
         "Content-Type": "application/json",
     }
+    # Add v10 API Accept header if needed (for spec operations)
+    if use_v10_api:
+        request_headers["Accept"] = "application/vnd.api.v10+json"
     if headers:
         request_headers.update(headers)
     
@@ -953,7 +957,7 @@ class CreateSpecTool(ToolHandler):
             "workspaceId": args["workspaceId"]
         }
         
-        result = await postman_api_call("POST", "/apis", body=body)
+        result = await postman_api_call("POST", "/apis", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -981,7 +985,7 @@ class GetSpecTool(ToolHandler):
     
     async def run_tool(self, args: dict) -> list[TextContent]:
         spec_id = args["specId"]
-        result = await postman_api_call("GET", f"/apis/{spec_id}")
+        result = await postman_api_call("GET", f"/apis/{spec_id}", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1017,13 +1021,13 @@ class GetAllSpecsTool(ToolHandler):
     
     async def run_tool(self, args: dict) -> list[TextContent]:
         workspace_id = args["workspaceId"]
-        params = {"workspace": workspace_id}
+        params = {"workspaceId": workspace_id}
         if args.get("cursor"):
             params["cursor"] = args["cursor"]
         if args.get("limit"):
             params["limit"] = args["limit"]
         
-        result = await postman_api_call("GET", "/apis", params=params)
+        result = await postman_api_call("GET", "/apis", params=params, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1057,7 +1061,7 @@ class UpdateSpecPropertiesTool(ToolHandler):
         spec_id = args["specId"]
         body = {"name": args["name"]}
         
-        result = await postman_api_call("PATCH", f"/apis/{spec_id}", body=body)
+        result = await postman_api_call("PATCH", f"/apis/{spec_id}", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1085,7 +1089,7 @@ class GetSpecDefinitionTool(ToolHandler):
     
     async def run_tool(self, args: dict) -> list[TextContent]:
         spec_id = args["specId"]
-        result = await postman_api_call("GET", f"/apis/{spec_id}/definition")
+        result = await postman_api_call("GET", f"/apis/{spec_id}/definition", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1126,7 +1130,7 @@ class CreateSpecFileTool(ToolHandler):
             "path": args["path"]
         }
         
-        result = await postman_api_call("POST", f"/apis/{spec_id}/files", body=body)
+        result = await postman_api_call("POST", f"/apis/{spec_id}/files", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1154,7 +1158,7 @@ class GetSpecFilesTool(ToolHandler):
     
     async def run_tool(self, args: dict) -> list[TextContent]:
         spec_id = args["specId"]
-        result = await postman_api_call("GET", f"/apis/{spec_id}/files")
+        result = await postman_api_call("GET", f"/apis/{spec_id}/files", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1187,7 +1191,7 @@ class GetSpecFileTool(ToolHandler):
     async def run_tool(self, args: dict) -> list[TextContent]:
         spec_id = args["specId"]
         file_path = args["filePath"]
-        result = await postman_api_call("GET", f"/apis/{spec_id}/files/{file_path}")
+        result = await postman_api_call("GET", f"/apis/{spec_id}/files/{file_path}", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1241,7 +1245,7 @@ class UpdateSpecFileTool(ToolHandler):
         if args.get("type"):
             body["type"] = args["type"]
         
-        result = await postman_api_call("PUT", f"/apis/{spec_id}/files/{file_path}", body=body)
+        result = await postman_api_call("PUT", f"/apis/{spec_id}/files/{file_path}", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1291,7 +1295,7 @@ class GenerateCollectionTool(ToolHandler):
             "options": args.get("options", {})
         }
         
-        result = await postman_api_call("POST", f"/apis/{spec_id}/collections", body=body)
+        result = await postman_api_call("POST", f"/apis/{spec_id}/collections", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1337,7 +1341,7 @@ class GetSpecCollectionsTool(ToolHandler):
         if args.get("limit"):
             params["limit"] = args["limit"]
         
-        result = await postman_api_call("GET", f"/apis/{spec_id}/collections", params=params)
+        result = await postman_api_call("GET", f"/apis/{spec_id}/collections", params=params, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1388,7 +1392,7 @@ class GenerateSpecFromCollectionTool(ToolHandler):
             "type": args["type"]
         }
         
-        result = await postman_api_call("POST", "/apis/generate", body=body)
+        result = await postman_api_call("POST", "/apis/generate", body=body, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1422,7 +1426,7 @@ class GetGeneratedCollectionSpecsTool(ToolHandler):
         collection_uid = args["collectionUid"]
         params = {"elementType": args["elementType"]}
         
-        result = await postman_api_call("GET", f"/collections/{collection_uid}/apis", params=params)
+        result = await postman_api_call("GET", f"/collections/{collection_uid}/apis", params=params, use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1456,7 +1460,7 @@ class SyncCollectionWithSpecTool(ToolHandler):
         spec_id = args["specId"]
         collection_uid = args["collectionUid"]
         
-        result = await postman_api_call("PUT", f"/apis/{spec_id}/collections/{collection_uid}/sync")
+        result = await postman_api_call("PUT", f"/apis/{spec_id}/collections/{collection_uid}/sync", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
@@ -1490,7 +1494,7 @@ class SyncSpecWithCollectionTool(ToolHandler):
         spec_id = args["specId"]
         collection_uid = args["collectionUid"]
         
-        result = await postman_api_call("PUT", f"/apis/{spec_id}/collections/{collection_uid}/sync-with-spec")
+        result = await postman_api_call("PUT", f"/apis/{spec_id}/collections/{collection_uid}/sync-with-spec", use_v10_api=True)
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
